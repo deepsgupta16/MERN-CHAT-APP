@@ -49,11 +49,38 @@ const SideDrawer = () => {
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const logoutHandler = () => {
-    localStorage.removeItem("userInfo");
-    // history.push("/");
-    // history.go(0);
-    window.location.href = "/";
+  const logoutHandler = async () => {
+    const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+    if (!userInfo || !userInfo.token) {
+      throw new Error("No user token found");
+    }
+    try {
+      await axios.post(
+        "/api/user/logout",
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        }
+      );
+
+
+      localStorage.removeItem("userInfo");
+      // history.push("/");
+      window.location.href = "/";
+    } catch (error) {
+      console.error("Full error:", error);
+      console.error("Error response:", error.response?.data); // This will show the backend error
+      toast({
+        title: "Error Occurred!",
+        description: error.response?.data?.message || "Failed to logout",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
+    }
   };
 
   // drawer close handler
@@ -166,8 +193,10 @@ const SideDrawer = () => {
         <div>
           <Menu>
             <MenuButton p={1}>
-              <NotificationBadge count={notification.length} 
-              effect={Effect.SCALE}/>
+              <NotificationBadge
+                count={notification.length}
+                effect={Effect.SCALE}
+              />
               <BellIcon fontSize="2xl" m={1} />
             </MenuButton>
             <MenuList pl={2}>
@@ -186,7 +215,6 @@ const SideDrawer = () => {
                     : `New Message from ${getSender(user, notif.chat.users)}`}
                 </MenuItem>
               ))}
-          
             </MenuList>
           </Menu>
           <Menu>

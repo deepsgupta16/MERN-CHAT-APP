@@ -1,5 +1,7 @@
 const asyncHandler = require("express-async-handler");
 const User = require("../Models/userModel");
+const Chat = require("../Models/chatModel");
+const Message = require("../Models/messageModel");
 const generateToken = require("../Config/generateToken");
 
 //Controller functions handle the logic for each route.
@@ -74,4 +76,48 @@ const allUsers = asyncHandler(async (req, res) => {
   res.send(users);
 });
 
-module.exports = { registerUser, authUser, allUsers };
+
+const cleanupGuestUser = async (userId) => {
+  try {
+    const user = await User.findById(userId);
+    
+    if (user.email === "guest@example.com") {
+      // Delete groups where guest is admin
+      await Chat.deleteMany({ 
+        groupAdmin: userId,
+        isGroupChat: true 
+      });
+
+      // Remove guest from other groups
+      await Chat.updateMany(
+        { 
+          users: userId,
+          isGroupChat: true,
+          groupAdmin: { $ne: userId }
+        },
+        { $pull: { users: userId } }
+      );
+
+      // Delete one-on-one chats
+      await Chat.deleteMany({
+        isGroupChat: false,
+        users: userId
+      });
+
+      // Delete guest user messages
+      await Message.deleteMany({ sender: userId });
+
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error("Error in cleanup:", error);
+    throw error;
+  }
+};
+
+
+
+
+
+module.exports = { registerUser, authUser, allUsers, cleanupGuestUser};
