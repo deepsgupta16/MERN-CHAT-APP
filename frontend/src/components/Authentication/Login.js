@@ -7,6 +7,7 @@ import {
   InputRightElement,
   VStack,
   Button,
+  FormHelperText,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import { useToast } from "@chakra-ui/react";
@@ -18,6 +19,7 @@ const Login = () => {
   const [email, setEmail] = useState();
   const [password, setPassword] = useState();
   const [loading, setLoading] = useState(false);
+  const [isEmailFocused, setIsEmailFocused] = useState(false);
   const toast = useToast();
   const history = useHistory();
 
@@ -96,7 +98,14 @@ const Login = () => {
           value={email}
           placeholder="Enter Your Email"
           onChange={(e) => setEmail(e.target.value.toLowerCase())}
+          onFocus={() => setIsEmailFocused(true)}
+          onBlur={() => setIsEmailFocused(false)}
         />
+        {isEmailFocused && (
+          <FormHelperText color="blue.500" fontStyle="italic">
+            Email is accepted in lowercase only
+          </FormHelperText>
+        )}
       </FormControl>
       <FormControl id="password" isRequired>
         <FormLabel>Password</FormLabel>
