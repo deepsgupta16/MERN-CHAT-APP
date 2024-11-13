@@ -18,7 +18,7 @@ const Signup = () => {
   const [show, setShow] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [name, setName] = useState();
-  const [email, setEmail] = useState();
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState();
   const [confirmPassword, setConfirmPassword] = useState();
   const [pic, setPic] = useState();
@@ -105,6 +105,20 @@ const Signup = () => {
       return;
     }
 
+    // Add email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast({
+        title: "Invalid Email Format",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
+      setLoading(false);
+      return;
+    }
+
     try {
       const config = {
         headers: {
@@ -115,7 +129,7 @@ const Signup = () => {
         "/api/user",
         {
           name,
-          email,
+          email: email.toLowerCase(),
           password,
           pic,
         },
@@ -157,8 +171,9 @@ const Signup = () => {
       <FormControl id="email" isRequired>
         <FormLabel>Email</FormLabel>
         <Input
+          value={email}
           placeholder="Enter Your Email"
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => setEmail(e.target.value.toLowerCase())}
         />
       </FormControl>
       <FormControl id="password" isRequired>

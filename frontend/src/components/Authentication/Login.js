@@ -37,6 +37,19 @@ const Login = () => {
       return;
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast({
+        title: "Invalid Email Format",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
+      setLoading(false);
+      return;
+    }
+
     try {
       const config = {
         headers: {
@@ -45,7 +58,7 @@ const Login = () => {
       };
       const { data } = await axios.post(
         "/api/user/login",
-        { email, password },
+        { email: email.toLowerCase(), password },
         config
       );
       toast({
@@ -82,7 +95,7 @@ const Login = () => {
         <Input
           value={email}
           placeholder="Enter Your Email"
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => setEmail(e.target.value.toLowerCase())}
         />
       </FormControl>
       <FormControl id="password" isRequired>
