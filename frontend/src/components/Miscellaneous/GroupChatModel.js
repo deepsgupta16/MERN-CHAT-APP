@@ -10,6 +10,7 @@ import {
   ModalFooter,
   useDisclosure,
   FormControl,
+  FormHelperText,
   Input,
   Flex,
 } from "@chakra-ui/react";
@@ -27,6 +28,7 @@ const GroupChatModel = ({ children }) => {
   const [search, setSearch] = useState("");
   const [searchResult, setSearchResult] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showHelper, setShowHelper] = useState(false);
 
   const toast = useToast();
 
@@ -155,7 +157,14 @@ const GroupChatModel = ({ children }) => {
                 placeholder="Add Users eg: John, Piyush, Jane"
                 mb={1}
                 onChange={(e) => handleSearch(e.target.value)}
+                onFocus={() => setShowHelper(true)} // Show helper text when input is focused
+                onBlur={() => setShowHelper(false)}
               />
+              {showHelper && ( // Only show helper text when showHelper is true
+                <FormHelperText color="blue.500" fontStyle="italic">
+                  At least 3 users are required to create a group
+                </FormHelperText>
+              )}
             </FormControl>
             <Flex flexWrap="wrap" alignItems="center">
               {selectedUsers.map((u) => (
