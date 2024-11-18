@@ -54,6 +54,85 @@ const SideDrawer = () => {
     if (!userInfo || !userInfo.token) {
       throw new Error("No user token found");
     }
+
+    if (user.email === "guest@example.com") {
+      // Show confirmation toast for guest users
+      toast({
+        position: "top",
+        duration: null,
+        isClosable: false,
+        // Custom toast component
+        render: () => (
+          <Box
+            p={4}
+            bg="white"
+            borderRadius="md"
+            boxShadow="lg"
+            border="1px"
+            borderColor="red.200"
+          >
+            <Text fontSize="lg" fontWeight="bold" mb={3}>
+              Confirm Logout
+            </Text>
+            {/* Warning message box */}
+            <Box
+              p={3}
+              bg="red.50"
+              borderRadius="md"
+              borderLeft="4px"
+              borderColor="red.400"
+              mb={4}
+            >
+              <Text fontWeight="bold" color="red.600" mb={2}>
+                ⚠️ Important Notice
+              </Text>
+              <Text color="red.600" fontSize="sm">
+                All your chats, groups, and messages will be permanently
+                deleted. Guest user data cannot be recovered after logout.
+              </Text>
+            </Box>
+            {/* Confirmation buttons */}
+            <Button
+              colorScheme="red"
+              mr={3}
+              onClick={async () => {
+                try {
+                  await axios.post(
+                    "/api/user/logout",
+                    {},
+                    {
+                      headers: {
+                        Authorization: `Bearer ${user.token}`,
+                      },
+                    }
+                  );
+                  toast.closeAll();
+                  localStorage.removeItem("userInfo");
+                  window.location.href = "/";
+                } catch (error) {
+                  toast({
+                    title: "Error Occurred!",
+                    description:
+                      error.response?.data?.message || "Failed to logout",
+                    status: "error",
+                    duration: 5000,
+                    isClosable: true,
+                    position: "top",
+                  });
+                }
+              }}
+            >
+              Yes, Logout
+            </Button>
+            <Button variant="ghost" onClick={() => toast.closeAll()}>
+              Cancel
+            </Button>
+          </Box>
+        ),
+      });
+      return; // Return early if guest user cancels
+    }
+
     try {
       await axios.post(
         "/api/user/logout",
@@ -64,7 +143,6 @@ const SideDrawer = () => {
           },
         }
       );
-
 
       localStorage.removeItem("userInfo");
       // history.push("/");
