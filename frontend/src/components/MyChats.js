@@ -180,15 +180,15 @@ const MyChats = (fetchAgain) => {
                   },
                 }}
               >
-                  <Text display="flex" alignItems="center" fontSize={"lg"}>
-                    {/* {!chat.isGroupChat
+                <Text display="flex" alignItems="center" fontSize={"lg"}>
+                  {/* {!chat.isGroupChat
                     ? getSender(loggedUser, chat.users)
                     : chat.chatName} */}
 
-                    {!chat.isGroupChat && loggedUser && chat.users
-                      ? getSender(loggedUser, chat.users)
-                      : chat.chatName}
-                  </Text>
+                  {!chat.isGroupChat && loggedUser && chat.users
+                    ? getSender(loggedUser, chat.users)
+                    : chat.chatName}
+                </Text>
 
                 {/* For deleting the chat */}
                 <Button
@@ -205,40 +205,6 @@ const MyChats = (fetchAgain) => {
                 >
                   <CloseIcon boxSize="3" />
                 </Button>
-                {/* Add this AlertDialog component */}
-                <AlertDialog
-                  isOpen={isDeleteAlertOpen}
-                  // leastDestructiveRef={cancelRef}
-                  onClose={() => setIsDeleteAlertOpen(false)}
-                >
-                  <AlertDialogOverlay>
-                    <AlertDialogContent>
-                      <AlertDialogHeader fontSize="lg" fontWeight="bold">
-                        Do you want to delete the Chat!
-                      </AlertDialogHeader>
-
-                      <AlertDialogBody>
-                        This will permanently delete the chat.
-                      </AlertDialogBody>
-
-                      <AlertDialogFooter>
-                        <Button
-                          // ref={cancelRef}
-                          onClick={() => setIsDeleteAlertOpen(false)}
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          colorScheme="red"
-                          onClick={handleDeleteConfirm}
-                          ml={3}
-                        >
-                          Delete
-                        </Button>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialogOverlay>
-                </AlertDialog>
               </Box>
             ))}
           </Stack>
@@ -246,6 +212,35 @@ const MyChats = (fetchAgain) => {
           <ChatLoading />
         )}
       </Box>
+      {/* Add this AlertDialog component */}
+      <AlertDialog
+        isOpen={isDeleteAlertOpen}
+        onClose={() => setIsDeleteAlertOpen(false)}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              Do you want to delete the Chat!
+            </AlertDialogHeader>
+
+            <AlertDialogBody>
+              This will permanently delete the chat.
+            </AlertDialogBody>
+
+            <AlertDialogFooter>
+              <Button
+                // ref={cancelRef}
+                onClick={() => setIsDeleteAlertOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button colorScheme="red" onClick={handleDeleteConfirm} ml={3}>
+                Delete
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </Box>
   );
 };
