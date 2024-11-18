@@ -1,6 +1,7 @@
 const asyncHandler = require("express-async-handler");
 const Chat = require("../Models/chatModel");
 const User = require("../Models/userModel");
+const Message = require("../Models/messageModel");
 
 const accessChat = asyncHandler(async (req, res) => {
   const { userId } = req.body;
@@ -64,6 +65,33 @@ const fetchChats = asyncHandler(async (req, res) => {
     res.status(400);
     throw new Error(error.message);
   }
+});
+
+// for deleting the chat of a particular user
+const deleteChat = asyncHandler(async (req, res) => {
+  const { chatId } = req.body;
+
+  // Find the chat first
+  const chat = await Chat.findById(chatId);
+
+  if (!chat) {
+    res.status(404);
+    throw new Error("Chat Not Found");
+  }
+
+  // Check if user is part of the chat
+  if (!chat.users.includes(req.user._id)) {
+    res.status(403);
+    throw new Error("Not authorized to delete this chat");
+  }
+
+  // Delete associated messages first
+  await Message.deleteMany({ chat: chatId });
+
+  // Delete the chat
+  const deletedChat = await Chat.findByIdAndDelete(chatId);
+
+  res.json(deletedChat);
 });
 
 const createGroupChat = asyncHandler(async (req, res) => {
@@ -157,4 +185,5 @@ module.exports = {
   renameGroup,
   addToGroup,
   removeFromGroup,
+  deleteChat,
 };

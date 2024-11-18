@@ -1,9 +1,19 @@
 import React from "react";
 import { ChatState } from "../Context/ChatProvider";
 import axios from "axios";
-import { Button, Stack, useToast } from "@chakra-ui/react";
+import {
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogOverlay,
+  Button,
+  Stack,
+  useToast,
+} from "@chakra-ui/react";
 import { Box, Text } from "@chakra-ui/react";
-import { AddIcon } from "@chakra-ui/icons";
+import { AddIcon, CloseIcon } from "@chakra-ui/icons";
 import ChatLoading from "./ChatLoading";
 import { getSender } from "../config/ChatLogics";
 import GroupChatModel from "../components/Miscellaneous/GroupChatModel";
@@ -20,6 +30,9 @@ const MyChats = (fetchAgain) => {
   );
   const { user, selectedChat, setSelectedChat, chats, setChats } = ChatState();
   const toast = useToast();
+  // Deleting the chat
+  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
+  const [chatToDelete, setChatToDelete] = useState(null);
 
   /**
    * Fetches the user's chats from the server and updates the state with the fetched chats.
@@ -51,6 +64,57 @@ const MyChats = (fetchAgain) => {
     // setLoggedUser(JSON.parse(localStorage.getItem("userInfo")));
     fetchChats();
   }, [fetchAgain]);
+
+  const handleDeleteClick = (chat) => {
+    setChatToDelete(chat);
+    setIsDeleteAlertOpen(true);
+  };
+
+  // Delete handler
+  const handleDeleteConfirm = async () => {
+    if (!chatToDelete) return;
+
+    try {
+      const config = {
+        headers: {
+          "Content-type": "application/json",
+          Authorization: `Bearer ${user.token}`,
+        },
+      };
+
+      await axios.delete("/api/chat/delete", {
+        headers: config.headers,
+        data: { chatId: chatToDelete._id },
+      });
+
+      setChats(chats.filter((c) => c._id !== chatToDelete._id));
+
+      if (selectedChat?._id === chatToDelete._id) {
+        setSelectedChat(null);
+      }
+
+      toast({
+        title: "Chat Deleted Successfully",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+        position: "top",
+      });
+    } catch (error) {
+      toast({
+        title: "Error Deleting Chat",
+        description: error.response?.data?.message || "Something went wrong",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+        position: "top",
+      });
+    } finally {
+      // NEW: Clean up states
+      setIsDeleteAlertOpen(false);
+      setChatToDelete(null);
+    }
+  };
 
   return (
     <Box
@@ -107,16 +171,74 @@ const MyChats = (fetchAgain) => {
                 py={2}
                 borderRadius="lg"
                 key={chat._id}
+                display="flex"
+                width="100%"
+                justifyContent="space-between"
+                _hover={{
+                  "& .delete-button": {
+                    opacity: 1,
+                  },
+                }}
               >
-                <Text>
-                  {/* {!chat.isGroupChat
+                  <Text display="flex" alignItems="center" fontSize={"lg"}>
+                    {/* {!chat.isGroupChat
                     ? getSender(loggedUser, chat.users)
                     : chat.chatName} */}
 
-                  {!chat.isGroupChat && loggedUser && chat.users
-                    ? getSender(loggedUser, chat.users)
-                    : chat.chatName}
-                </Text>
+                    {!chat.isGroupChat && loggedUser && chat.users
+                      ? getSender(loggedUser, chat.users)
+                      : chat.chatName}
+                  </Text>
+
+                {/* For deleting the chat */}
+                <Button
+                  className="delete-button"
+                  opacity={0}
+                  transition="opacity 0.2s"
+                  size="sm"
+                  colorScheme="red"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteClick(chat);
+                  }}
+                  ml={2} // Add margin to the left of button
+                >
+                  <CloseIcon boxSize="3" />
+                </Button>
+                {/* Add this AlertDialog component */}
+                <AlertDialog
+                  isOpen={isDeleteAlertOpen}
+                  // leastDestructiveRef={cancelRef}
+                  onClose={() => setIsDeleteAlertOpen(false)}
+                >
+                  <AlertDialogOverlay>
+                    <AlertDialogContent>
+                      <AlertDialogHeader fontSize="lg" fontWeight="bold">
+                        Do you want to delete the Chat!
+                      </AlertDialogHeader>
+
+                      <AlertDialogBody>
+                        This will permanently delete the chat.
+                      </AlertDialogBody>
+
+                      <AlertDialogFooter>
+                        <Button
+                          // ref={cancelRef}
+                          onClick={() => setIsDeleteAlertOpen(false)}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          colorScheme="red"
+                          onClick={handleDeleteConfirm}
+                          ml={3}
+                        >
+                          Delete
+                        </Button>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialogOverlay>
+                </AlertDialog>
               </Box>
             ))}
           </Stack>
