@@ -17,6 +17,8 @@ import {
   Input,
   useToast,
   Spinner,
+  Badge,
+  HStack,
 } from "@chakra-ui/react";
 import React from "react";
 import { useState } from "react";
@@ -28,7 +30,6 @@ import axios from "axios";
 import ChatLoading from "../ChatLoading";
 import UserListItem from "../UserAvatar/UserListItem";
 import { getSender } from "../../config/ChatLogics";
-import NotificationBadge, { Effect } from "react-notification-badge";
 
 const SideDrawer = () => {
   const [search, setSearch] = useState("");
@@ -268,15 +269,58 @@ const SideDrawer = () => {
         <Text fontSize="2xl" fontFamily="Work sans">
           Talk-A-Tive
         </Text>
-        <div>
+        <HStack spacing={4}>
           <Menu>
-            <MenuButton p={1}>
-              <NotificationBadge
-                count={notification.length}
-                effect={Effect.SCALE}
-              />
-              <BellIcon fontSize="2xl" m={1} />
+            <MenuButton p={1} position="relative">
+              {notification.length > 0 && (
+                <Badge
+                  position="absolute"
+                  top="-2"
+                  right="-2"
+                  colorScheme="red"
+                  bg="red.500"
+                  color="white"
+                  borderRadius="full"
+                  fontSize="xs"
+                  px={2}
+                  transform="scale(1)"
+                  animation="pulse 2s infinite"
+                  _hover={{
+                    bg: "red.600",
+                  }}
+                  sx={{
+                    "@keyframes pulse": {
+                      "0%": {
+                        transform: "scale(0.95)",
+                        boxShadow: "0 0 0 0 rgba(255, 82, 82, 0.7)",
+                      },
+                      "70%": {
+                        transform: "scale(1)",
+                        boxShadow: "0 0 0 10px rgba(255, 82, 82, 0)",
+                      },
+                      "100%": {
+                        transform: "scale(0.95)",
+                        boxShadow: "0 0 0 0 rgba(255, 82, 82, 0)",
+                      },
+                    },
+                  }}
+                >
+                  {notification.length}
+                </Badge>
+              )}
+              <Box position="relative">
+                <BellIcon
+                  fontSize="2xl"
+                  m={1}
+                  transition="all 0.2s"
+                  _hover={{
+                    color: "blue.500",
+                    transform: "scale(1.1)",
+                  }}
+                />
+              </Box>
             </MenuButton>
+
             <MenuList pl={2}>
               {/* check if notification is empty */}
               {!notification.length && "No New Messages"}
@@ -312,7 +356,7 @@ const SideDrawer = () => {
               <MenuItem onClick={logoutHandler}>Logout</MenuItem>
             </MenuList>
           </Menu>
-        </div>
+        </HStack>
       </Box>
 
       <Drawer isOpen={isOpen} placement="left" onClose={handleDrawerClose}>
